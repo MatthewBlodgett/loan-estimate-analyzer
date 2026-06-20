@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Estimate Analyzer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #ffffff;
+      --color-heading: #061b31;
+      --color-body: #4a5a72;
+      --color-label: #273951;
+      --color-accent: #533afd;
+      --color-accent-hover: #4434d4;
+      --color-accent-light: #eeebff;
+      --color-border: #e5edf5;
+      --color-border-focus: #b9b9f9;
+      --color-success: #15be53;
+      --color-success-bg: rgba(21,190,83,0.12);
+      --color-warning: #f59e0b;
+      --color-warning-bg: rgba(245,158,11,0.12);
+      --color-danger: #ef4444;
+      --color-danger-bg: rgba(239,68,68,0.12);
+      --color-info: #3b82f6;
+      --color-info-bg: rgba(59,130,246,0.12);
+      --shadow-sm: rgba(23,23,23,0.06) 0px 3px 6px;
+      --shadow-md: rgba(23,23,23,0.08) 0px 15px 35px;
+      --shadow-lg: rgba(50,50,93,0.25) 0px 30px 45px -30px, rgba(0,0,0,0.1) 0px 18px 36px -18px;
+      --radius: 6px;
+      --max-width: 1100px;
+      --font-sans: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      color: var(--color-body);
+      background: #f8fafc;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    header {
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      padding: 16px 0;
+      position: sticky; top: 0; z-index: 50;
+    }
+    header .container {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px; font-weight: 600; color: var(--color-heading);
+      letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo-icon {
+      width: 32px; height: 32px; background: var(--color-accent);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 14px; font-weight: 700;
+    }
+    .header-badge {
+      font-size: 12px; color: var(--color-body); background: #f1f4f9;
+      padding: 4px 10px; border-radius: 4px; font-weight: 400;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 48px 0 32px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-family: var(--font-sans);
+      font-size: 42px; font-weight: 300; color: var(--color-heading);
+      letter-spacing: -0.8px; line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      font-size: 18px; font-weight: 300; color: var(--color-body);
+      max-width: 620px; margin: 0 auto;
+    }
+
+    /* Tool Layout */
+    .tool-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 32px; padding-bottom: 60px;
+    }
+    @media (max-width: 800px) {
+      .tool-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 30px; }
+    }
+
+    /* Form Panel */
+    .form-panel {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+    .form-panel h2 {
+      font-size: 18px; font-weight: 400; color: var(--color-heading);
+      letter-spacing: -0.2px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .form-section {
+      margin-bottom: 20px;
+    }
+    .form-section h3 {
+      font-size: 13px; font-weight: 600; color: var(--color-label);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block; font-size: 14px; font-weight: 400; color: var(--color-label);
+      margin-bottom: 4px;
+    }
+    .form-group .hint {
+      font-size: 11px; color: #94a3b8; margin-bottom: 4px;
+    }
+    .form-group input, .form-group select {
+      width: 100%; padding: 8px 12px;
+      font-family: var(--font-sans); font-size: 15px; font-weight: 300;
+      color: var(--color-heading);
+      border: 1px solid var(--color-border); border-radius: 4px;
+      background: var(--color-bg);
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none; border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px var(--color-accent-light);
+    }
+    .form-group input::placeholder { color: #94a3b8; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    /* Checkbox */
+    .checkbox-group {
+      display: flex; gap: 24px; margin-top: 4px;
+    }
+    .checkbox-group label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 14px; font-weight: 300; color: var(--color-heading);
+      cursor: pointer;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: auto; accent-color: var(--color-accent);
+    }
+
+    /* Analyze Button */
+    .btn-analyze {
+      width: 100%; padding: 12px 24px;
+      background: var(--color-accent); color: white;
+      border: none; border-radius: 4px;
+      font-family: var(--font-sans); font-size: 16px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s;
+      margin-top: 8px;
+    }
+    .btn-analyze:hover { background: var(--color-accent-hover); }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Results Panel */
+    .results-panel {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      min-height: 400px;
+    }
+    .results-panel h2 {
+      font-size: 18px; font-weight: 400; color: var(--color-heading);
+      letter-spacing: -0.2px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .results-empty {
+      text-align: center; padding: 60px 20px; color: #94a3b8;
+    }
+    .results-empty .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+    .results-empty p { font-size: 15px; font-weight: 300; }
+
+    /* Findings */
+    .finding {
+      padding: 14px 16px; border-radius: 4px; margin-bottom: 10px;
+      font-size: 14px; line-height: 1.5;
+    }
+    .finding-good { background: var(--color-success-bg); border-left: 3px solid var(--color-success); }
+    .finding-warn { background: var(--color-warning-bg); border-left: 3px solid var(--color-warning); }
+    .finding-danger { background: var(--color-danger-bg); border-left: 3px solid var(--color-danger); }
+    .finding-info { background: var(--color-info-bg); border-left: 3px solid var(--color-info); }
+    .finding-label { font-weight: 600; margin-bottom: 2px; }
+    .finding-good .finding-label { color: #16a34a; }
+    .finding-warn .finding-label { color: #d97706; }
+    .finding-danger .finding-label { color: #dc2626; }
+    .finding-info .finding-label { color: #2563eb; }
+
+    /* Summary Box */
+    .summary-box {
+      background: linear-gradient(135deg, var(--color-accent-light), #f0f4ff);
+      border: 1px solid var(--color-border-focus);
+      border-radius: 4px; padding: 16px; margin-bottom: 16px;
+    }
+    .summary-box h3 {
+      font-size: 13px; font-weight: 600; color: var(--color-accent);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+    .summary-box p {
+      font-size: 14px; font-weight: 400; color: var(--color-heading);
+      line-height: 1.6;
+    }
+
+    /* AI Section */
+    .ai-section {
+      margin-top: 20px; padding-top: 20px;
+      border-top: 1px solid var(--color-border);
+    }
+    .btn-ai {
+      width: 100%; padding: 10px 20px;
+      background: white; color: var(--color-accent);
+      border: 1px solid var(--color-border-focus); border-radius: 4px;
+      font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-ai:hover { background: var(--color-accent-light); }
+    .btn-ai:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ai-status {
+      font-size: 13px; color: var(--color-body); text-align: center; margin-top: 8px;
+    }
+    .ai-result {
+      background: #f8fafc; border: 1px solid var(--color-border);
+      border-radius: 4px; padding: 16px; margin-top: 12px;
+      font-size: 14px; line-height: 1.7; white-space: pre-wrap;
+    }
+
+    /* Data Table */
+    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .data-table td {
+      padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f1f4f9;
+    }
+    .data-table td:last-child {
+      text-align: right; font-weight: 500; color: var(--color-heading);
+      font-family: var(--font-mono); font-size: 13px;
+    }
+    .data-table td:first-child { color: var(--color-body); font-weight: 400; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table .total td { font-weight: 600; color: var(--color-heading); border-top: 2px solid var(--color-border); padding-top: 10px; }
+
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 3px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .badge-good { background: var(--color-success-bg); color: #16a34a; }
+    .badge-warn { background: var(--color-warning-bg); color: #d97706; }
+    .badge-danger { background: var(--color-danger-bg); color: #dc2626; }
+
+    .rating-bar {
+      display: flex; gap: 4px; margin: 0 0 12px;
+    }
+    .rating-dot {
+      flex: 1; height: 4px; border-radius: 2px;
+    }
+    .rating-dot.filled { background: var(--color-accent); }
+    .rating-dot.empty { background: #e5edf5; }
+
+    .footer {
+      text-align: center; padding: 24px 0 40px;
+      font-size: 12px; color: #94a3b8; border-top: 1px solid var(--color-border);
+    }
+    .footer a { color: var(--color-accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">LE</div>
+      Loan Estimate Analyzer
+    </div>
+    <span class="header-badge">Portfolio Project</span>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1>Decode your Loan Estimate in seconds</h1>
+    <p>Enter the numbers from your Closing Disclosure (LE) and get a plain-English breakdown — hidden fees flagged, rates compared, and terms explained.</p>
+  </div>
+</section>
+
+<!-- Tool -->
+<section class="container">
+  <div class="tool-grid">
+
+    <!-- LEFT: Form -->
+    <div class="form-panel">
+      <h2>Enter Loan Estimate Data</h2>
+
+      <div class="form-section">
+        <h3>Loan Terms</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Loan Amount</label>
+            <input type="number" id="loanAmount" placeholder="e.g. 350000" step="1000">
+          </div>
+          <div class="form-group">
+            <label>Interest Rate (%)</label>
+            <input type="number" id="interestRate" placeholder="e.g. 6.5" step="0.125">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Monthly P&amp;I</label>
+            <input type="number" id="monthlyPI" placeholder="e.g. 2213" step="1">
+          </div>
+          <div class="form-group">
+            <label>APR (%)</label>
+            <input type="number" id="apr" placeholder="e.g. 6.72" step="0.01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Prepayment Penalty</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="prepayPenalty"> Yes, has penalty</label>
+            <label><input type="checkbox" id="balloonPayment"> Yes, has balloon</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Closing Costs</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Section A — Origination Charges</label>
+            <input type="number" id="sectionA" placeholder="e.g. 4500" step="1">
+          </div>
+          <div class="form-group">
+            <label>Section B — Services (shoppable)</label>
+            <input type="number" id="sectionB" placeholder="e.g. 800" step="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Section C — Services (required)</label>
+            <input type="number" id="sectionC" placeholder="e.g. 1200" step="1">
+          </div>
+          <div class="form-group">
+            <label>Section E — Taxes &amp; Govt Fees</label>
+            <input type="number" id="sectionE" placeholder="e.g. 600" step="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Section F — Prepaids</label>
+            <input type="number" id="sectionF" placeholder="e.g. 2400" step="1">
+          </div>
+          <div class="form-group">
+            <label>Section G — Initial Escrow</label>
+            <input type="number" id="sectionG" placeholder="e.g. 1800" step="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Section H — Other</label>
+          <input type="number" id="sectionH" placeholder="e.g. 500" step="1">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Transaction Details</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Loan Purpose</label>
+            <select id="loanPurpose">
+              <option value="purchase">Purchase</option>
+              <option value="refinance">Refinance</option>
+              <option value="cashout">Cash-Out Refinance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Property Value (purchase price or appraisal)</label>
+            <input type="number" id="propertyValue" placeholder="e.g. 435000" step="1000">
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Total Closing Costs (D+I)</label>
+            <input type="number" id="totalClosingCosts" placeholder="e.g. 11800" step="1">
+          </div>
+          <div class="form-group">
+            <label>Cash to Close</label>
+            <input type="number" id="cashToClose" placeholder="e.g. 58800" step="1">
+          </div>
+          <div class="form-group">
+            <label>Discount Points Paid</label>
+            <input type="number" id="discountPoints" placeholder="e.g. 0" step="0.125">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-analyze" id="analyzeBtn">Analyze Loan Estimate</button>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="results-panel" id="resultsPanel">
+      <h2>Analysis Results</h2>
+      <div class="results-empty" id="resultsEmpty">
+        <div class="icon">📋</div>
+        <p>Fill in the loan estimate details on the left, then click <strong>Analyze Loan Estimate</strong>.</p>
+        <p style="margin-top:8px;font-size:13px;">All fields convert automatically — no dollar signs needed.</p>
+      </div>
+      <div id="resultsContent" style="display:none;"></div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Built with domain expertise · Uses OpenRouter free models for AI-enhanced analysis
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const resultsEmpty = document.getElementById('resultsEmpty');
+  const resultsContent = document.getElementById('resultsContent');
+
+  // --- Helpers ---
+  function $(id) { return document.getElementById(id); }
+
+  function getVal(id) {
+    const v = parseFloat($(id).value);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function fmt(n) {
+    if (n === 0) return '$0';
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  function fmtPct(n) {
+    return n.toFixed(3) + '%';
+  }
+
+  function fmtMoney(n) {
+    return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  // Current market benchmark (approximate — user can interpret)
+  const MARKET_RATE = 6.625;
+
+  // --- Core Analysis ---
+  function analyze() {
+    const loanAmount = getVal('loanAmount');
+    const rate = getVal('interestRate');
+    const monthlyPI = getVal('monthlyPI');
+    const apr = getVal('apr');
+    const prepay = $('prepayPenalty').checked;
+    const balloon = $('balloonPayment').checked;
+    const secA = getVal('sectionA');
+    const secB = getVal('sectionB');
+    const secC = getVal('sectionC');
+    const secE = getVal('sectionE');
+    const secF = getVal('sectionF');
+    const secG = getVal('sectionG');
+    const secH = getVal('sectionH');
+    const purpose = $('loanPurpose').value;
+    const propValue = getVal('propertyValue');
+    const totalCC = getVal('totalClosingCosts');
+    const cashToClose = getVal('cashToClose');
+    const points = getVal('discountPoints');
+
+    const findings = [];
+    let score = 0;
+    let maxScore = 0;
+
+    // --- Validation ---
+    if (loanAmount <= 0 || rate <= 0) {
+      return { error: true, msg: 'Please enter at least a loan amount and interest rate.' };
+    }
+
+    // 1. Rate vs Market
+    maxScore += 20;
+    if (rate < MARKET_RATE - 0.5) {
+      findings.push({ type: 'good', label: 'Excellent Rate', text: `Your rate of ${rate}% is well below the current market average (~${MARKET_RATE}%). This is a strong deal.` });
+      score += 20;
+    } else if (rate <= MARKET_RATE + 0.25) {
+      findings.push({ type: 'good', label: 'Competitive Rate', text: `Your rate of ${rate}% is in line with the current market average (~${MARKET_RATE}%). Fair deal.` });
+      score += 15;
+    } else if (rate <= MARKET_RATE + 1.0) {
+      findings.push({ type: 'warn', label: 'Above-Market Rate', text: `Your rate of ${rate}% is above the current market average (~${MARKET_RATE}%). Ask your lender to match market rates or provide lender credits.` });
+      score += 5;
+    } else {
+      findings.push({ type: 'danger', label: 'Significantly Above Market', text: `Your rate of ${rate}% is well above market (~${MARKET_RATE}%). Unless you have credit issues, this needs negotiation.` });
+    }
+
+    // 2. APR Spread
+    if (apr > 0 && rate > 0) {
+      maxScore += 10;
+      const spread = apr - rate;
+      if (spread <= 0.2) {
+        findings.push({ type: 'good', label: 'Tight APR Spread', text: `APR (${apr}%) is only ${spread.toFixed(3)}% above the note rate — minimal closing cost impact.` });
+        score += 10;
+      } else if (spread <= 0.5) {
+        findings.push({ type: 'info', label: 'Moderate APR Spread', text: `APR (${apr}%) is ${spread.toFixed(3)}% above the note rate. Typical for most loans, but worth confirming fees aren't inflated.` });
+        score += 5;
+      } else {
+        findings.push({ type: 'warn', label: 'Wide APR Spread', text: `APR (${apr}%) is ${spread.toFixed(3)}% above the note rate. This suggests high closing costs relative to the loan amount. Review fees closely.` });
+        score += 2;
+      }
+    }
+
+    // 3. Prepayment Penalty
+    maxScore += 10;
+    if (prepay) {
+      findings.push({ type: 'danger', label: 'Prepayment Penalty', text: 'This loan has a prepayment penalty. You could be charged thousands for paying off early or refinancing. Avoid this unless there\'s a compensating benefit.' });
+    } else {
+      findings.push({ type: 'good', label: 'No Prepayment Penalty', text: 'No prepayment penalty — you can refinance or pay off early without fees.' });
+      score += 10;
+    }
+
+    // 4. Balloon Payment
+    maxScore += 5;
+    if (balloon) {
+      findings.push({ type: 'danger', label: 'Balloon Payment', text: 'This loan has a balloon payment — you\'ll owe a large lump sum at the end of the term. High risk unless you have a clear exit strategy.' });
+    } else {
+      score += 5;
+    }
+
+    // 5. Section A — Origination Charges
+    if (loanAmount > 0 && secA > 0) {
+      maxScore += 10;
+      const pctOfLoan = (secA / loanAmount) * 100;
+      if (pctOfLoan <= 0.5) {
+        findings.push({ type: 'good', label: 'Low Origination Fees', text: `Origination charges (${fmt(secA)}) are only ${pctOfLoan.toFixed(2)}% of the loan amount — very reasonable.` });
+        score += 10;
+      } else if (pctOfLoan <= 1.0) {
+        findings.push({ type: 'info', label: 'Typical Origination Fees', text: `Origination charges (${fmt(secA)}) are ${pctOfLoan.toFixed(2)}% of the loan amount. Within normal range.` });
+        score += 5;
+      } else if (pctOfLoan <= 1.5) {
+        findings.push({ type: 'warn', label: 'Higher Than Average Origination', text: `Origination charges (${fmt(secA)}) are ${pctOfLoan.toFixed(2)}% of the loan amount. On the higher side — review what's included.` });
+        score += 2;
+      } else {
+        findings.push({ type: 'danger', label: 'Very High Origination Fees', text: `Origination charges (${fmt(secA)}) are ${pctOfLoan.toFixed(2)}% of the loan amount. This is expensive. Ask your lender to itemize and reduce.` });
+      }
+    }
+
+    // 6. Points Analysis
+    if (points > 0 && loanAmount > 0) {
+      maxScore += 5;
+      const pointsCost = (points / 100) * loanAmount;
+      findings.push({ type: 'info', label: 'Discount Points Paid', text: `You're paying ${points} point(s) (${fmt(pointsCost)}). This buys down your rate. Break-even: ask your lender for the monthly savings vs cost calculation.` });
+      score += 5;
+      // Also check if points seem high
+      if (points > 3) {
+        findings.push({ type: 'warn', label: 'High Points', text: `${points} points is a lot. Make sure the rate reduction justifies the upfront cost. Typically 1 point buys ~0.25% off the rate.` });
+      }
+    }
+
+    // 7. Total Closing Costs vs Loan / Value
+    if (totalCC > 0 && loanAmount > 0) {
+      maxScore += 10;
+      const ccPct = (totalCC / loanAmount) * 100;
+      const threshold = purpose === 'refinance' || purpose === 'cashout' ? 5 : 3;
+      if (ccPct <= threshold) {
+        findings.push({ type: 'good', label: 'Reasonable Closing Costs', text: `Total closing costs (${fmt(totalCC)}) are ${ccPct.toFixed(1)}% of the loan amount. Within healthy range.` });
+        score += 10;
+      } else if (ccPct <= threshold * 1.5) {
+        findings.push({ type: 'warn', label: 'Higher Closing Costs', text: `Total closing costs (${fmt(totalCC)}) are ${ccPct.toFixed(1)}% of the loan amount. Above average — negotiate or shop around.` });
+        score += 3;
+      } else {
+        findings.push({ type: 'danger', label: 'Very High Closing Costs', text: `Total closing costs (${fmt(totalCC)}) are ${ccPct.toFixed(1)}% of the loan amount. Significantly above typical. Request a revised estimate.` });
+      }
+    }
+
+    // 8. LTV / LTV check (if property value given)
+    if (propValue > 0 && loanAmount > 0) {
+      maxScore += 5;
+      const ltv = (loanAmount / propValue) * 100;
+      if (ltv <= 80) {
+        findings.push({ type: 'good', label: 'Good LTV Ratio', text: `Loan-to-value is ${ltv.toFixed(1)}%. At or below 80% — you likely avoid PMI and may qualify for better rates.` });
+        score += 5;
+      } else if (ltv <= 90) {
+        findings.push({ type: 'warn', label: 'Moderate LTV', text: `Loan-to-value is ${ltv.toFixed(1)}%. You may need PMI and rates may be slightly higher. Consider a larger down payment if possible.` });
+        score += 2;
+      } else {
+        findings.push({ type: 'danger', label: 'High LTV', text: `Loan-to-value is ${ltv.toFixed(1)}%. High LTV loans have stricter requirements, PMI, and higher rates.` });
+      }
+    }
+
+    // 9. Cash to Close sanity check
+    if (cashToClose > 0 && loanAmount > 0 && propValue > 0) {
+      maxScore += 5;
+      const expectedDownPayment = propValue - loanAmount;
+      const roughCtc = expectedDownPayment + totalCC;
+      const diff = Math.abs(cashToClose - roughCtc);
+      const pctOff = roughCtc > 0 ? (diff / roughCtc) * 100 : 0;
+      if (pctOff > 25) {
+        findings.push({ type: 'warn', label: 'Cash to Close Seems Off', text: `Expected cash to close around ${fmt(roughCtc)} (down payment + closing costs). Your estimate shows ${fmt(cashToClose)} — a difference of ~${pctOff.toFixed(0)}%. Verify the numbers.` });
+      } else {
+        score += 5;
+      }
+    }
+
+    // 10. Section B & C review (shoppable services)
+    if (secB > 0 && secC > 0) {
+      maxScore += 5;
+      if (secB > secC * 2) {
+        findings.push({ type: 'warn', label: 'Shoppable Services High', text: `Services you can shop for (${fmt(secB)}) are much higher than non-shoppable (${fmt(secC)}). Shop around — title, escrow, and appraisal fees vary widely.` });
+      } else {
+        score += 5;
+      }
+    }
+
+    // 11. Escrow check
+    if (secG > 0 && monthlyPI > 0) {
+      const escrowMonths = secG / (monthlyPI * 0.15); // rough: T&I ~15% of P&I
+      if (escrowMonths > 14) {
+        findings.push({ type: 'warn', label: 'Large Initial Escrow', text: `Initial escrow (${fmt(secG)}) seems high — equivalent to ~${Math.round(escrowMonths)} months. Check that it's not collecting more than the lender is allowed.` });
+      }
+    }
+
+    // --- Rating ---
+    const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 50;
+    let overall, overallClass;
+    if (pct >= 80) { overall = 'Excellent'; overallClass = 'badge-good'; }
+    else if (pct >= 60) { overall = 'Good'; overallClass = 'badge-good'; }
+    else if (pct >= 40) { overall = 'Fair — Review Findings'; overallClass = 'badge-warn'; }
+    else { overall = 'Poor — Proceed with Caution'; overallClass = 'badge-danger'; }
+
+    // --- Summary ---
+    let summaryLines = [];
+    summaryLines.push(`Loan amount: ${fmtMoney(loanAmount)} at ${rate}% for a ${purpose.replace('-', ' ')}.`);
+    if (monthlyPI > 0) summaryLines.push(`Monthly principal & interest: ${fmtMoney(monthlyPI)}.`);
+    if (totalCC > 0) summaryLines.push(`Total closing costs: ${fmtMoney(totalCC)}.`);
+
+    const totalLoanCosts = secA + secB + secC;
+    const totalOtherCosts = secE + secF + secG + secH;
+
+    // Monthly payment estimate
+    let estimatedPayment = monthlyPI;
+    if (estimatedPayment === 0 && rate > 0 && loanAmount > 0) {
+      const monthlyRate = (rate / 100) / 12;
+      const numPayments = 360;
+      estimatedPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      summaryLines.push(`Estimated P&I (calculated): ${fmtMoney(Math.round(estimatedPayment))}.`);
+    }
+
+    return {
+      findings,
+      score, maxScore, pct,
+      overall, overallClass,
+      summaryLines,
+      totalLoanCosts, totalOtherCosts,
+      estimatedPayment,
+      details: {
+        loanAmount, rate, monthlyPI, apr, prepay, balloon,
+        secA, secB, secC, secE, secF, secG, secH,
+        totalCC, cashToClose, points, purpose, propValue,
+        totalLoanCosts, totalOtherCosts
+      }
+    };
+  }
+
+  // --- Render Results ---
+  function render(result) {
+    if (result.error) {
+      resultsContent.style.display = 'block';
+      resultsContent.innerHTML = `<div class="finding finding-warn"><div class="finding-label">Missing Info</div>${result.msg}</div>`;
+      return;
+    }
+
+    const f = result.findings;
+    const numRatings = 5;
+    const filledDots = Math.round((result.pct / 100) * numRatings);
+
+    let dotsHtml = '';
+    for (let i = 0; i < numRatings; i++) {
+      dotsHtml += `<div class="rating-dot ${i < filledDots ? 'filled' : 'empty'}"></div>`;
+    }
+
+    let findingsHtml = '';
+    f.forEach(fi => {
+      findingsHtml += `
+        <div class="finding finding-${fi.type}">
+          <div class="finding-label">${fi.label}</div>
+          ${fi.text}
+        </div>
+      `;
+    });
+
+    // Data summary table
+    const d = result.details;
+    let tableRows = '';
+    if (d.loanAmount > 0) tableRows += `<tr><td>Loan Amount</td><td>${fmtMoney(d.loanAmount)}</td></tr>`;
+    if (d.rate > 0) tableRows += `<tr><td>Interest Rate</td><td>${d.rate}%</td></tr>`;
+    if (d.apr > 0) tableRows += `<tr><td>APR</td><td>${d.apr}%</td></tr>`;
+    if (d.monthlyPI > 0) tableRows += `<tr><td>Monthly P&amp;I</td><td>${fmtMoney(d.monthlyPI)}</td></tr>`;
+    if (d.estimatedPayment > 0 && d.monthlyPI === 0) tableRows += `<tr><td>Est. Monthly P&amp;I (calc)</td><td>${fmtMoney(Math.round(d.estimatedPayment))}</td></tr>`;
+    if (d.totalLoanCosts > 0) tableRows += `<tr><td>Total Loan Costs (A+B+C)</td><td>${fmtMoney(d.totalLoanCosts)}</td></tr>`;
+    if (d.totalOtherCosts > 0) tableRows += `<tr><td>Total Other Costs (E+F+G+H)</td><td>${fmtMoney(d.totalOtherCosts)}</td></tr>`;
+    if (d.totalCC > 0) tableRows += `<tr class="total"><td>Total Closing Costs (D+I)</td><td>${fmtMoney(d.totalCC)}</td></tr>`;
+    if (d.cashToClose > 0) tableRows += `<tr><td>Cash to Close</td><td>${fmtMoney(d.cashToClose)}</td></tr>`;
+    if (d.points > 0) tableRows += `<tr><td>Discount Points</td><td>${d.points}</td></tr>`;
+
+    resultsContent.style.display = 'block';
+    resultsContent.innerHTML = `
+      <div class="rating-bar">${dotsHtml}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:24px;font-weight:300;color:var(--color-heading);letter-spacing:-0.5px;">
+          ${result.pct}% Score
+        </span>
+        <span class="badge ${result.overallClass}">${result.overall}</span>
+      </div>
+
+      <div class="summary-box">
+        <h3>Summary</h3>
+        <p>${result.summaryLines.join(' ')}</p>
+      </div>
+
+      <table class="data-table">${tableRows}</table>
+
+      <h3 style="font-size:14px;font-weight:600;color:var(--color-label);margin-bottom:10px;">Findings</h3>
+      ${findingsHtml}
+
+      <div class="ai-section">
+        <button class="btn-ai" id="aiBtn">✨ Enhance with AI Analysis</button>
+        <div class="ai-status" id="aiStatus">Get a plain-English letter summarizing this loan estimate.</div>
+        <div id="aiOutput"></div>
+      </div>
+    `;
+
+    // Wire up AI button
+    const aiBtn = document.getElementById('aiBtn');
+    const aiStatus = document.getElementById('aiStatus');
+    const aiOutput = document.getElementById('aiOutput');
+
+    aiBtn.addEventListener('click', async function() {
+      aiBtn.disabled = true;
+      aiStatus.textContent = 'Analyzing with AI... (using OpenRouter free model)';
+      aiOutput.innerHTML = '';
+
+      // Build a prompt from our data
+      const d = result.details;
+      const prompt = `You are a senior mortgage advisor. Write a short, plain-English summary of this loan estimate for a home buyer. Be direct, identify the most important things they should know, and give one actionable piece of advice. Here are the details:
+
+- Loan Purpose: ${d.purpose}
+- Loan Amount: $${d.loanAmount.toLocaleString()}
+- Interest Rate: ${d.rate}%
+- APR: ${d.apr || 'N/A'}%
+- Monthly P&I: $${d.monthlyPI || 'N/A'}
+- Prepayment Penalty: ${d.prepay ? 'Yes' : 'No'}
+- Balloon Payment: ${d.balloon ? 'Yes' : 'No'}
+- Origination Charges (Section A): $${d.secA}
+- Total Closing Costs: $${d.totalCC}
+- Discount Points: ${d.points}
+- Cash to Close: $${d.cashToClose}
+- Property Value: $${d.propValue || 'N/A'}
+- Loan-to-Value: ${d.propValue > 0 ? ((d.loanAmount / d.propValue) * 100).toFixed(1) + '%' : 'N/A'}
+- Current Market Rate Reference: ~${MARKET_RATE}%
+
+Key findings from rule analysis:
+${result.findings.map(f => '- ' + f.label + ': ' + f.text).join('\\n')}
+
+Keep it to 3-4 short paragraphs. No markdown. Write as a trusted advisor.`;
+
+      const apiKey = ''; // User provides their own OpenRouter key
+      const model = 'google/gemini-2.0-flash-exp:free';
+
+      try {
+        // If no API key is stored, prompt for it
+        if (!apiKey) {
+          aiOutput.innerHTML = `
+            <div class="ai-result">
+              <strong>AI feature requires an OpenRouter API key (free, no credit card needed).</strong><br><br>
+              <ol style="margin-left:18px;">
+                <li>Go to <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> and sign up</li>
+                <li>Generate a free API key</li>
+                <li>Paste it below and click Submit</li>
+              </ol>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <input type="text" id="apiKeyInput" placeholder="sk-or-v1-..." style="flex:1;padding:8px 12px;border:1px solid var(--color-border);border-radius:4px;font-family:var(--font-sans);font-size:14px;">
+                <button id="submitKeyBtn" style="padding:8px 16px;background:var(--color-accent);color:white;border:none;border-radius:4px;cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:500;">Submit &amp; Analyze</button>
+              </div>
+            </div>
+          `;
+
+          aiStatus.textContent = 'Free API key needed (OpenRouter).';
+
+          document.getElementById('submitKeyBtn').addEventListener('click', async function() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (!key || !key.startsWith('sk-or-')) {
+              aiOutput.innerHTML = `<div class="ai-result" style="color:var(--color-danger);">Please enter a valid key starting with "sk-or-".</div>`;
+              return;
+            }
+            aiOutput.innerHTML = `<div class="ai-result">Analyzing...</div>`;
+            await callAI(key, model, prompt, aiOutput, aiStatus, aiBtn);
+          });
+        }
+      } catch(e) {
+        aiOutput.innerHTML = `<div class="ai-result" style="color:var(--color-danger);">AI request failed: ${e.message}</div>`;
+        aiStatus.textContent = 'Try again later.';
+        aiBtn.disabled = false;
+      }
+    });
+  }
+
+  async function callAI(key, model, prompt, outputEl, statusEl, btn) {
+    try {
+      const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + key,
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'Loan Estimate Analyzer'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 600,
+          temperature: 0.7
+        })
+      });
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(`API error (${resp.status}): ${errText.slice(0, 200)}`);
+      }
+      const data = await resp.json();
+      const text = data.choices?.[0]?.message?.content || 'No response from model.';
+      outputEl.innerHTML = `<div class="ai-result">${text.replace(/\n/g, '<br>')}</div>`;
+      statusEl.textContent = '✅ AI analysis complete';
+      btn.disabled = false;
+    } catch(e) {
+      outputEl.innerHTML = `<div class="ai-result" style="color:var(--color-danger);">${e.message}</div>`;
+      statusEl.textContent = '❌ AI request failed. Check your key and try again.';
+      btn.disabled = false;
+    }
+  }
+
+  // --- Main handler ---
+  analyzeBtn.addEventListener('click', function() {
+    resultsEmpty.style.display = 'none';
+    resultsContent.style.display = 'none';
+    const result = analyze();
+    render(result);
+  });
+
+})();
+</script>
+</body>
+</html>
